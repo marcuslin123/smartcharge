@@ -6,7 +6,13 @@ answers the question the data says actually matters: **"where do I plug in right
 now, fairly, without circling the lot — and how do we keep chargers flowing so
 everyone gets a turn?"**
 
----
+
+## Screenshots
+
+| Home | Recommend |
+|------|-----------|
+| ![Home](https://raw.githubusercontent.com/marcuslin123/smartcharge/main/screenshots/home.png) | ![Recommend](https://raw.githubusercontent.com/marcuslin123/smartcharge/main/screenshots/recommend.png) |
+\n---
 
 ## Why v2 exists (what the real data showed)
 Analysis of the 4,758 real ChargePoint sessions (Jan–Jun 2026, 13 stations / 26
