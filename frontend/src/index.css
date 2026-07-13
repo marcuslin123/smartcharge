@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 222 47% 7%;
+  --foreground: 210 40% 98%;
+  --card: 222 44% 10%;
+  --card-foreground: 210 40% 98%;
+  --primary: 187 92% 50%;
+  --primary-foreground: 222 47% 8%;
+  --secondary: 217 33% 17%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217 33% 15%;
+  --muted-foreground: 215 20% 65%;
+  --accent: 152 76% 45%;
+  --accent-foreground: 222 47% 8%;
+  --border: 217 33% 20%;
+  --input: 217 33% 20%;
+  --ring: 187 92% 50%;
+  --radius: 1rem;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, hsl(187 92% 50% / 0.12), transparent 60%),
+    radial-gradient(900px 500px at -10% 20%, hsl(152 76% 45% / 0.10), transparent 55%),
+    hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+.glass {
+  background: linear-gradient(180deg, hsl(222 44% 12% / 0.85), hsl(222 44% 9% / 0.85));
+  backdrop-filter: blur(12px);
+  border: 1px solid hsl(var(--border));
+}
+
+.glow {
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.25), 0 8px 40px -12px hsl(var(--primary) / 0.4);
+}
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 hsl(var(--accent) / 0.5); }
+  70% { box-shadow: 0 0 0 12px hsl(var(--accent) / 0); }
+  100% { box-shadow: 0 0 0 0 hsl(var(--accent) / 0); }
+}
+.pulse-dot { animation: pulse-ring 2s infinite; }
+
+.smart-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  border-radius: 9999px;
+  outline: none;
+  cursor: pointer;
+}
+.smart-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 22px;
+  width: 22px;
+  border-radius: 9999px;
+  background: white;
+  border: 3px solid hsl(var(--primary));
+  box-shadow: 0 2px 10px hsl(var(--primary) / 0.5);
+  transition: transform 0.1s ease;
+}
+.smart-slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
+.smart-slider::-moz-range-thumb {
+  height: 22px;
+  width: 22px;
+  border-radius: 9999px;
+  background: white;
+  border: 3px solid hsl(var(--primary));
+  box-shadow: 0 2px 10px hsl(var(--primary) / 0.5);
+}
