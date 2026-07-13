@@ -1,4 +1,4 @@
-"""SmartCharge v2 FastAPI backend — real data + simulated real-time engine."""
+"""SmartCharge FastAPI backend — real data + simulated real-time engine."""
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException
@@ -11,7 +11,7 @@ from notifications import notifications
 from recommend import recommend
 from sim import SIM
 
-app = FastAPI(title="SmartCharge v2 API", version="2.0.0")
+app = FastAPI(title="SmartCharge API", version="2.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"],
                    allow_headers=["*"], allow_credentials=True)
 
