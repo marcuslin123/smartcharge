@@ -1,4 +1,4 @@
-"""Real-data layer for SmartCharge v2.
+"""Real-data layer for SmartCharge.
 
 Loads the real ChargePoint session export and work orders. All analytics
 (occupancy, per-station duration/idle distributions, reliability, user "charge
