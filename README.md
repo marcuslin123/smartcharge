@@ -1,20 +1,28 @@
-# SmartCharge v2 ⚡ — Live availability, FCFS, and turnover
+# SmartCharge ⚡ — Live availability, FCFS, and turnover
 
-A rethink of SmartCharge for the FPL Juno Beach campus, built on the **real
-ChargePoint session data**. Where v1 answered *"when should I charge?"*, v2
-answers the question the data says actually matters: **"where do I plug in right
-now, fairly, without circling the lot — and how do we keep chargers flowing so
-everyone gets a turn?"**
+A rethink of workplace EV charging for the FPL Juno Beach campus, built on the **real
+ChargePoint session data**. Instead of asking *"when should I charge?"*, the app answers
+the question the data says actually matters: **"where do I plug in right now, fairly,
+without circling the lot — and how do we keep chargers flowing so everyone gets a turn?"**
 
 ---
 
-## Why v2 exists (what the real data showed)
+## Screenshots
+
+| Home | Recommend |
+|------|-----------|
+| ![Home](https://raw.githubusercontent.com/marcuslin123/smartcharge/main/screenshots/home.png) | ![Recommend](https://raw.githubusercontent.com/marcuslin123/smartcharge/main/screenshots/recommend.png) |
+
+---
+
+## Why this app exists (what the real data showed)
+
 Analysis of the 4,758 real ChargePoint sessions (Jan–Jun 2026, 13 stations / 26
 ports) reframed the problem:
 
 - **The garage is saturated all workday.** ~23–25 of 26 ports are in use *every
   hour* from 8 AM–4 PM (~93% utilization). There is no real "off-peak" window to
-  send people to during the workday, so v1's "charge at 2 PM" advice is a false
+  send people to during the workday, so "charge at 2 PM" advice is a false
   lever.
 - **Cars camp.** Median session is **6.6 h** but only ~5.2 h is actual charging;
   cars sit **idle a mean 97 min** after they finish. Reclaiming half that idle
@@ -29,6 +37,7 @@ ports) reframed the problem:
 ---
 
 ## Core principle: pure FCFS, the app never reserves
+
 The single most important design decision. **First person to physically plug in
 wins.** The app *recommends* and *shows visibility*, but it never holds, claims,
 or reserves a port. This is deliberate and evolved over several iterations:
@@ -45,37 +54,35 @@ or reserves a port. This is deliberate and evolved over several iterations:
 
 ---
 
-## What changed from v1 (and why)
-v2 keeps v1's **layout** (mobile single-column, bottom tab bar — Home · Recommend
-· Alerts · Profile) and color palette, but changes the substance:
+## Design decisions
 
-- **Right lever.** v1's premise was "charge off-peak" (shift people to 2–4 PM).
+- **Right lever.** The original premise was "charge off-peak" (shift people to 2–4 PM).
   The real data shows the garage is ~93% full *every* workday hour, so there is
-  no off-peak window — that advice was a false lever. v2 targets **turnover +
+  no off-peak window — that advice was a false lever. The app targets **turnover +
   live availability** instead (the bottleneck the data actually revealed).
-- **A concrete answer, not a chart to interpret.** v1 gave dashboards and timing
-  guidance and left you to figure out where to go. v2 gives one decision:
+- **A concrete answer, not a chart to interpret.** Early versions gave dashboards and timing
+  guidance and left you to figure out where to go. This app gives one decision:
   *"plug into G05-A."*
-- **Handles contention (the real failure mode).** v1 had no concept of two people
-  wanting the same charger. v2 adds pure-FCFS spread, **contention awareness**
+- **Handles contention (the real failure mode).** Early versions had no concept of two people
+  wanting the same charger. This app adds pure-FCFS spread, **contention awareness**
   ("X others are also looking"), a **notify-me-when-free** queue with no-show
   pass-through, and **urgency turnover nudges** ("move your car, Z waiting").
-- **Real data, real-time-first.** v1 ran on synthetic assumptions and static
-  recommendations. v2 is built on the actual 4,758-session ChargePoint dataset,
+- **Real data, real-time-first.** Early versions ran on synthetic assumptions and static
+  recommendations. This app is built on the actual 4,758-session ChargePoint dataset,
   runs a live availability engine, and does data-driven **ghost detection**
   (JUNO BEACH 06 = 53% zero-kWh → auto-excluded). The engine is structured so a
   live telemetry feed drops in without changing the API.
-- **Honest about the data.** v2 corrects v1 mistakes — e.g. it recognizes user
+- **Honest about the data.** The app corrects earlier mistakes — e.g. it recognizes user
   159231V as an **overnight/off-peak charger** (85 of 114 sessions at 10 PM)
   rather than idle-shaming them, and it flags the Blink file as *not* Juno Beach
   so it isn't used to fake occupancy.
-- **Visibility, not reservations.** v1 had no check-in. v2 added one, then
+- **Visibility, not reservations.** Early versions had no check-in. This app added one, then
   deliberately reshaped it into a **visibility-only, two-step** signal
   (Watching → I've plugged in) after we confirmed any remote hold would break
   FCFS for the driver physically at the charger.
 
-### Iteration history within v2 (design decisions)
-- **Soft-holds → removed.** Early v2 held a recommended port ~5 min; dropped in
+### Iteration history (key design decisions)
+- **Soft-holds → removed.** Early prototypes held a recommended port ~5 min; dropped in
   favor of pure FCFS (see "Core principle").
 - **Check-in reframed** from "heading here" (implied claim) to "planning to use /
   watching" (interest only), so people arrive urgent and nobody feels entitled.
@@ -91,7 +98,7 @@ v2 keeps v1's **layout** (mobile single-column, bottom tab bar — Home · Recom
 
 ---
 
-## What the app does (current)
+## What the app does
 
 ### Home
 - **Open chargers right now** — live count out of the **106-port campus**. Live
@@ -113,7 +120,7 @@ v2 keeps v1's **layout** (mobile single-column, bottom tab bar — Home · Recom
 
 ### Recommend (the hero)
 - **One clear answer** — "head to G05-A" — grounded in live availability, keeping
-  v1's equity rules (segments, home-charger routing, 5:30 PM finish, latest-start
+  equitable rules (segments, home-charger routing, 5:30 PM finish, latest-start
   deadline).
 - **Home-charger logic** — only skips/reduces charging when you *actually* have
   the range: enough for a round trip → don't charge; enough to get home → charge
@@ -155,6 +162,7 @@ v2 keeps v1's **layout** (mobile single-column, bottom tab bar — Home · Recom
 ---
 
 ## Real-time-first architecture
+
 The whole live layer is a **simulated real-time engine** (`backend/sim.py`)
 seeded from the real historical distributions — arrival weighting, per-station
 charge durations, and **departure times sampled from the real weekday end-time
@@ -177,6 +185,7 @@ generator later **without touching the API**.
 ---
 
 ## Quick start
+
 Backend (port 8001):
 ```bash
 cd backend
@@ -184,6 +193,7 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 python main.py
 ```
+
 Frontend (port 5174, proxies `/api` → 8001):
 ```bash
 cd frontend
@@ -202,4 +212,5 @@ npm run dev   # open http://localhost:5174
 - Tap **Demo: simulate 10 colleagues** to see the honest FCFS spread.
 
 ## Stack
+
 React 18 · Vite · Tailwind · Framer Motion · Recharts · FastAPI · Pandas
