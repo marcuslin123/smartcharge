@@ -1,7 +1,7 @@
-"""Real-time-aware recommendation engine for v2.
+"""Real-time-aware recommendation engine.
 
-Keeps v1's equitable decision tree (segments, home-charger routing, 5:30 PM
-finish, latest-start deadline) but the answer is grounded in *live* availability:
+Built on an equitable decision tree (segments, home-charger routing, 5:30 PM
+finish, latest-start deadline) with answers grounded in *live* availability:
 charge now at a specific open port, or join the fair handoff line with a
 predicted next free-up — never a fake "off-peak" slot in a saturated garage.
 """
