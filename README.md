@@ -1,216 +1,124 @@
-# SmartCharge ⚡ — Live availability, FCFS, and turnover
+# SmartCharge
 
-A rethink of workplace EV charging for the FPL Juno Beach campus, built on the **real
-ChargePoint session data**. Instead of asking *"when should I charge?"*, the app answers
-the question the data says actually matters: **"where do I plug in right now, fairly,
-without circling the lot — and how do we keep chargers flowing so everyone gets a turn?"**
+SmartCharge is a workplace EV charging app for the FPL Juno Beach campus. It uses real ChargePoint session data to help employees answer a practical question: **where should I plug in right now, fairly, without circling the lot?**
 
----
+The project started as a scheduling problem, but the data showed a different bottleneck. The campus was already saturated through the workday, so the highest-impact solution was not telling people to charge later. It was improving live availability, turnover, and first-come-first-served coordination.
+
+## Project Highlights
+
+- Built a full-stack web app with a React/Vite frontend and FastAPI backend.
+- Analyzed **4,758 real ChargePoint sessions** from January to June 2026 across 13 stations and 26 ports.
+- Found that the garage was about **93% utilized from 8 AM to 4 PM**, which made "off-peak" recommendations ineffective during work hours.
+- Identified that cars sat idle for a mean of **97 minutes** after charging finished, making turnover the most important capacity lever.
+- Added data-driven ghost-charger detection, including excluding **JUNO BEACH 06** after a 53% zero-kWh rate was found and corroborated by work orders.
+- Designed the app around **pure first-come, first-served behavior**: the app recommends and notifies, but never reserves a charger.
 
 ## Screenshots
 
-| Home | Recommend |
-|------|-----------|
-| ![Home](https://raw.githubusercontent.com/marcuslin123/smartcharge/main/screenshots/home.png) | ![Recommend](https://raw.githubusercontent.com/marcuslin123/smartcharge/main/screenshots/recommend.png) |
+| Home | Recommendation |
+| --- | --- |
+| ![Home screen](https://raw.githubusercontent.com/marcuslin123/smartcharge/main/screenshots/home.png) | ![Recommendation screen](https://raw.githubusercontent.com/marcuslin123/smartcharge/main/screenshots/recommend.png) |
 
----
+## What I Built
 
-## Why this app exists (what the real data showed)
+### Live Availability Engine
 
-Analysis of the 4,758 real ChargePoint sessions (Jan–Jun 2026, 13 stations / 26
-ports) reframed the problem:
+The backend simulates real-time charger availability from historical ChargePoint behavior. It uses real distributions for arrivals, charge durations, and weekday departure times so the demo reflects the campus pattern: full during the workday, then gradually opening up after 5 PM.
 
-- **The garage is saturated all workday.** ~23–25 of 26 ports are in use *every
-  hour* from 8 AM–4 PM (~93% utilization). There is no real "off-peak" window to
-  send people to during the workday, so "charge at 2 PM" advice is a false
-  lever.
-- **Cars camp.** Median session is **6.6 h** but only ~5.2 h is actual charging;
-  cars sit **idle a mean 97 min** after they finish. Reclaiming half that idle
-  frees **~20 port-hours/day** — more capacity than any timing nudge.
-  **Turnover beats timing.**
-- **A charger is statistically dead.** JUNO BEACH 06 has a **53% zero-kWh** rate —
-  auto-flagged as a ghost, corroborated by work orders, so it's never recommended.
-- **Evenings actually empty out.** Session end-times peak ~4 PM and taper to
-  near-empty by 7 PM, so availability rises sharply after 5 PM (see "Open chargers
-  by time" on Home).
+The engine is designed so a live telemetry feed could replace the simulated schedule generator later without changing the API contract.
 
----
+### Recommendation Flow
 
-## Core principle: pure FCFS, the app never reserves
+The main user flow gives one clear recommendation, such as "head to G05-A," instead of asking employees to interpret a dashboard.
 
-The single most important design decision. **First person to physically plug in
-wins.** The app *recommends* and *shows visibility*, but it never holds, claims,
-or reserves a port. This is deliberate and evolved over several iterations:
+The recommendation considers:
 
-- We first tried **soft-holds** (recommend a port → hold it ~5 min so two people
-  aren't sent to the same charger). We removed them: with far more drivers than
-  chargers it's *inevitable and correct* that multiple people are pointed at the
-  same open port — a remote "hold" from someone's desk would defeat FCFS for the
-  driver physically standing at the charger.
-- So recommendations now **spread people across open ports when supply allows**
-  (a staleness tiebreaker sends the next person to a different port), but once
-  drivers outnumber open ports the **same port is honestly recommended to more
-  than one person** — and we say so (see Contention below).
+- current charger availability;
+- broken or unreliable chargers;
+- fair first-come-first-served behavior;
+- home-charger status;
+- range needed to get home;
+- latest useful start time before the end of the workday.
 
----
+### FCFS Coordination
 
-## Design decisions
+A major design decision was removing remote holds and reservations. In a constrained garage, a digital hold could unfairly block someone already standing at the charger.
 
-- **Right lever.** The original premise was "charge off-peak" (shift people to 2–4 PM).
-  The real data shows the garage is ~93% full *every* workday hour, so there is
-  no off-peak window — that advice was a false lever. The app targets **turnover +
-  live availability** instead (the bottleneck the data actually revealed).
-- **A concrete answer, not a chart to interpret.** Early versions gave dashboards and timing
-  guidance and left you to figure out where to go. This app gives one decision:
-  *"plug into G05-A."*
-- **Handles contention (the real failure mode).** Early versions had no concept of two people
-  wanting the same charger. This app adds pure-FCFS spread, **contention awareness**
-  ("X others are also looking"), a **notify-me-when-free** queue with no-show
-  pass-through, and **urgency turnover nudges** ("move your car, Z waiting").
-- **Real data, real-time-first.** Early versions ran on synthetic assumptions and static
-  recommendations. This app is built on the actual 4,758-session ChargePoint dataset,
-  runs a live availability engine, and does data-driven **ghost detection**
-  (JUNO BEACH 06 = 53% zero-kWh → auto-excluded). The engine is structured so a
-  live telemetry feed drops in without changing the API.
-- **Honest about the data.** The app corrects earlier mistakes — e.g. it recognizes user
-  159231V as an **overnight/off-peak charger** (85 of 114 sessions at 10 PM)
-  rather than idle-shaming them, and it flags the Blink file as *not* Juno Beach
-  so it isn't used to fake occupancy.
-- **Visibility, not reservations.** Early versions had no check-in. This app added one, then
-  deliberately reshaped it into a **visibility-only, two-step** signal
-  (Watching → I've plugged in) after we confirmed any remote hold would break
-  FCFS for the driver physically at the charger.
+Instead, SmartCharge uses:
 
-### Iteration history (key design decisions)
-- **Soft-holds → removed.** Early prototypes held a recommended port ~5 min; dropped in
-  favor of pure FCFS (see "Core principle").
-- **Check-in reframed** from "heading here" (implied claim) to "planning to use /
-  watching" (interest only), so people arrive urgent and nobody feels entitled.
-- **Live garage map demoted then removed** from the employee flow — it covered
-  only 26 of 106 ports and pushed the decision back onto the employee.
-- **UI polish** per feedback: static clock (defaults to now, scrub to preview),
-  "Open chargers by time" slider, row-format Profile, campus count of 106 (scaled
-  from 26 live ChargePoint ports), removed clutter (turnover card, peak badge,
-  segment badges), sleeker header/clock.
-- **Occupancy realism fix.** The live sim originally kept cars plugged in until
-  ~7 PM; departures now sample the **real weekday end-time distribution** so the
-  evening empties out like the historical curve.
+- **Planning / Watching** to show interest without claiming a port;
+- **I've plugged in** to start an actual charging session only after the driver physically connects;
+- contention warnings when multiple employees are looking for chargers;
+- notify-me-when-free alerts when all ports are busy;
+- turnover nudges when a car is charged or close to charged and colleagues are waiting.
 
----
+### Data-Aware Product Decisions
 
-## What the app does
+The app changed direction based on what the data showed:
 
-### Home
-- **Open chargers right now** — live count out of the **106-port campus**. Live
-  telemetry only exists for the 26 ChargePoint ports, so per the PRD we scale
-  ChargePoint availability proportionally to 106 until the other brands' feeds
-  come online.
-- **Open chargers by time** — drag the slider to see availability at any time.
-  The mini-curve is the **real weekday concurrency** from the ChargePoint data
-  (packed 8 AM–4 PM, emptying through the evening); the whole app reflects the
-  time you pick.
-- **X ghost chargers excluded** — one-line note; broken/dead ports are routed
-  around.
-- **Get recommendation** CTA.
+- Replaced "charge off-peak" advice because there was no meaningful workday off-peak window.
+- Removed the live garage map from the main employee flow because it covered only 26 of 106 campus ports and pushed the decision back onto the user.
+- Scaled live ChargePoint availability proportionally to the full 106-port campus until other charger feeds are available.
+- Treated the Blink CSV as out of scope after determining it represented Midtown PGA log-download events, not Juno Beach charging sessions.
+- Correctly classified the featured user profile as an overnight/off-peak charger instead of mislabeling them as an idle daytime user.
 
-> The live garage map was intentionally **removed from the employee flow**: it
-> only covered 26 of 106 ports and put the "where do I go?" decision back on the
-> employee. The recommendation is the single, clear answer instead. (`LiveMap.jsx`
-> remains in the repo as a demo-only artifact.)
+## Key Findings From the Data
 
-### Recommend (the hero)
-- **One clear answer** — "head to G05-A" — grounded in live availability, keeping
-  equitable rules (segments, home-charger routing, 5:30 PM finish, latest-start
-  deadline).
-- **Home-charger logic** — only skips/reduces charging when you *actually* have
-  the range: enough for a round trip → don't charge; enough to get home → charge
-  at home tonight; **not enough to get home → it still recommends charging now**
-  (just the smaller amount, since the home charger tops up the rest). A home
-  charger never blocks a needed charge and never grants priority.
-- **Visibility check-in (two steps, not a reservation):**
-  1. **"Planning to use / Watching"** — marks the port with a violet "Watching"
-     badge so colleagues see interest. It does **not** save the port; a walk-up
-     who plugs in first still wins. Auto-clears after 15 min if you don't show.
-  2. **"I've plugged in"** — only now does it become your charging session with a
-     timer + nudges. The map never claims a port is occupied when it isn't.
-- **Contention awareness** — when demand strains supply, the card warns:
-  *"X other people are also looking to charge right now — no port is saved for you
-  (FCFS). Head over now for the best chance; everyone sees this equally, no
-  priority."* This drives urgency so nobody's shocked/entitled if a port is taken.
-- **"From your profile"** context + carried-over home-charger setting.
-- **Demo: simulate 10 colleagues** — shows the honest FCFS spread (distinct ports
-  first, then shared ports → charger decides).
+| Finding | Product Impact |
+| --- | --- |
+| 23 to 25 of 26 ChargePoint ports were in use from 8 AM to 4 PM | Timing recommendations were not enough because the garage was full all day |
+| Median session length was 6.6 hours, but only about 5.2 hours was active charging | Idle time became the main target for improving access |
+| Cars were idle for a mean of 97 minutes after charging | Turnover nudges could free meaningful capacity without adding chargers |
+| JUNO BEACH 06 had a 53% zero-kWh rate | The app excludes unreliable chargers from recommendations |
+| Availability rises sharply after 5 PM | The time slider helps users preview when chargers are likely to open |
 
-### Alerts
-- **Notify me when a port frees** (formerly "handoff line") — when every port is
-  busy, join to be **pinged in order** the moment one opens, so you don't circle
-  the lot. It's a **heads-up, not a reservation** — first to physically plug in
-  wins. If a notified driver no-shows, the ping passes to the next person.
-- **Turnover / urgency nudges:**
-  - ~10 min before you have enough to get home: *"Plan to move — Z colleagues are
-    looking to charge right now."*
-  - When full/idle: *"Please move your vehicle — Z colleagues are waiting."*
-  Naming the count (**Z**) makes a charged driver more urgent about freeing the
-  port.
+## Main Features
 
-### Profile
-- **Your typical pattern** — usual days, plug-in time, favorite station, avg
-  session length, and an overnight/daytime badge, all from the real 159231V
-  history (114 sessions; correctly detected as an **overnight/off-peak charger**
-  rather than idle-shamed). Informs the recommendation; never grants priority.
+- **Home:** shows open chargers right now, projected availability by time, and excluded ghost chargers.
+- **Recommend:** gives one actionable charger recommendation with profile and range context.
+- **Alerts:** lets users request a notification when a charger opens, without creating a reservation.
+- **Profile:** summarizes a user's typical charging pattern from historical behavior.
+- **Demo simulation:** shows how recommendations spread across available ports while preserving FCFS behavior.
 
----
+## Tech Stack
 
-## Real-time-first architecture
+**Frontend:** React 18, Vite, Tailwind CSS, Framer Motion, Recharts  
+**Backend:** FastAPI, Python, Pandas  
+**Data:** ChargePoint sessions, maintenance work orders, cleaned charger metadata
 
-The whole live layer is a **simulated real-time engine** (`backend/sim.py`)
-seeded from the real historical distributions — arrival weighting, per-station
-charge durations, and **departure times sampled from the real weekday end-time
-distribution** so the live counts match history (peak-full midday, emptying by
-7 PM). It's demo-ready today, and a live telemetry feed can replace the schedule
-generator later **without touching the API**.
+## Quick Start
 
----
+Run the backend on port 8001:
 
-## Data notes
-- **ChargePoint CSV** — real, drives everything (occupancy curve, durations,
-  ghost detection, the featured user profile).
-- **Work orders (xlsx)** — real maintenance feed; flags broken chargers so
-  they're excluded.
-- **Blink CSV** is included but is **not Juno Beach** (it's "Midtown PGA" stations
-  and the rows are log-download events, not charging sessions), so it is not used
-  for occupancy. Other-brand ports (to reach the 106-port campus total) are
-  labelled simulated until their feeds come online.
-
----
-
-## Quick start
-
-Backend (port 8001):
 ```bash
 cd backend
-python -m venv .venv && source .venv/bin/activate
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 python main.py
 ```
 
-Frontend (port 5174, proxies `/api` → 8001):
+Run the frontend on port 5174:
+
 ```bash
 cd frontend
 npm install
-npm run dev   # open http://localhost:5174
+npm run dev
 ```
 
-## Demo tips
-- The clock is static and starts at the actual current time. Drag the **Open
-  chargers by time** slider (Home): ~0–4 open midday, rising to ~100/106 by 7 PM.
-- On **Recommend**, tap "Planning to use", then "I've plugged in", then advance
-  the clock past your finish time → the "you're charged, please move" urgency
-  nudge fires with the count of people looking.
-- At a saturated moment, use **Notify me when a port frees** (Alerts), then check
-  out from another port to see the next person get pinged.
-- Tap **Demo: simulate 10 colleagues** to see the honest FCFS spread.
+Then open:
 
-## Stack
+```text
+http://localhost:5174
+```
 
-React 18 · Vite · Tailwind · Framer Motion · Recharts · FastAPI · Pandas
+## Demo Tips
+
+- Use the **Open chargers by time** slider on Home to compare midday saturation with evening availability.
+- On Recommend, click **Planning to use**, then **I've plugged in**, then advance the clock past the finish time to see the turnover nudge.
+- At a saturated moment, use **Notify me when a port frees** in Alerts, then check out from another port to see the next person get pinged.
+- Click **Demo: simulate 10 colleagues** to see how the app spreads recommendations while staying honest about first-come-first-served access.
+
+## Why This Project Matters
+
+SmartCharge shows how product direction can change when real operational data contradicts the original assumption. The final app is not just a dashboard. It turns messy charger usage data into a practical employee workflow, balances fairness with urgency, and leaves a clear path from simulation to live telemetry.
