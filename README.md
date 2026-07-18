@@ -2,8 +2,6 @@
 
 SmartCharge is a workplace EV charging app for the FPL Juno Beach campus. It uses real ChargePoint session data to help employees answer a practical question: **where should I plug in right now, fairly, without circling the lot?**
 
-The project started as a scheduling problem, but the data showed a different bottleneck. The campus was already saturated through the workday, so the highest-impact solution was not telling people to charge later. It was improving live availability, turnover, and first-come-first-served coordination.
-
 ## Project Highlights
 
 - Built a full-stack web app with a React/Vite frontend and FastAPI backend.
