@@ -2,20 +2,13 @@
 
 SmartCharge is a workplace EV charging app for the NextEra Energy Juno Beach campus. It uses real ChargePoint session data to help employees answer a practical question: **where should I plug in right now, fairly, without circling the lot?**
 
-## Project Highlights
+The app is based on **4,758 real ChargePoint sessions** from January to June 2026 across 13 stations and 26 ports. The data showed that chargers were about **93% utilized from 8 AM to 4 PM**, making workday "off-peak" recommendations ineffective. SmartCharge instead focuses on live availability, fair first-come-first-served coordination, turnover nudges, and ghost-charger detection, including excluding **JUNO BEACH 06** after a **53% zero-kWh rate** was found and corroborated by work orders.
 
-- Built a full-stack web app with a React/Vite frontend and FastAPI backend.
-- Analyzed **4,758 real ChargePoint sessions** from January to June 2026 across 13 stations and 26 ports.
-- Found that the garage was about **93% utilized from 8 AM to 4 PM**, which made "off-peak" recommendations ineffective during work hours.
-- Identified that cars sat idle for a mean of **97 minutes** after charging finished, making turnover the most important capacity lever.
-- Added data-driven ghost-charger detection, including excluding **JUNO BEACH 06** after a 53% zero-kWh rate was found and corroborated by work orders.
-- Designed the app around **pure first-come, first-served behavior**: the app recommends and notifies, but never reserves a charger.
+## Tech Stack
 
-## Screenshots
-
-| Home | Recommendation |
-| --- | --- |
-| ![Home screen](https://raw.githubusercontent.com/marcuslin123/smartcharge/main/screenshots/home.png) | ![Recommendation screen](https://raw.githubusercontent.com/marcuslin123/smartcharge/main/screenshots/recommend.png) |
+**Frontend:** React 18, Vite, Tailwind CSS, Framer Motion, Recharts  
+**Backend:** FastAPI, Python, Pandas  
+**Data:** ChargePoint sessions, maintenance work orders, cleaned charger metadata
 
 ## Main Features
 
@@ -25,11 +18,11 @@ SmartCharge is a workplace EV charging app for the NextEra Energy Juno Beach cam
 - **Profile:** summarizes a user's typical charging pattern from historical behavior.
 - **Demo simulation:** shows how recommendations spread across available ports while preserving FCFS behavior.
 
-## Tech Stack
+## Screenshots
 
-**Frontend:** React 18, Vite, Tailwind CSS, Framer Motion, Recharts  
-**Backend:** FastAPI, Python, Pandas  
-**Data:** ChargePoint sessions, maintenance work orders, cleaned charger metadata
+| Home | Recommendation |
+| --- | --- |
+| ![Home screen](https://raw.githubusercontent.com/marcuslin123/smartcharge/main/screenshots/home.png) | ![Recommendation screen](https://raw.githubusercontent.com/marcuslin123/smartcharge/main/screenshots/recommend.png) |
 
 ## Quick Start
 
